@@ -14,6 +14,7 @@ import { VoteModel } from '../models/Vote.js'
 import { connectDb } from '../utils/db.js'
 import { sendElectionOpenedEmail, sendPasswordResetEmail, sendResultsPublishedEmail } from '../utils/email.js'
 import { sendError } from '../utils/http.js'
+import { computeResults } from '../utils/tally.js'
 
 async function notifyMembers(electionTitle: string, kind: 'opened' | 'closed') {
   try {
@@ -25,13 +26,13 @@ async function notifyMembers(electionTitle: string, kind: 'opened' | 'closed') {
           : sendResultsPublishedEmail(m.email, m.fullname, electionTitle),
       ),
     )
-  } catch { /* silent */ }
+  } catch (err) { console.error('Failed to notify members:', err) }
 }
 
 async function logAudit(userId: string, role: string, action: string, resource: string, resourceId = '', details = '') {
   try {
     await AuditLogModel.create({ userId, role, action, resource, resourceId, details })
-  } catch { /* silent */ }
+  } catch (err) { console.error('Failed to log audit:', err) }
 }
 
 function routePath(req: VercelRequest) {
@@ -438,43 +439,6 @@ async function submitVote(req: VercelRequest, res: VercelResponse) {
     return res.status(201).json({ ok: true })
   } finally {
     await session.endSession()
-  }
-}
-
-function computeResults(
-  candidates: { _id: string; fullname: string; photo: string }[],
-  ballots: { votes: { positionId: string; candidateId: string }[] }[],
-  positionId: string,
-) {
-  const totalVotes = ballots.length
-  const voteCount = new Map<string, number>()
-  for (const c of candidates) voteCount.set(c._id, 0)
-
-  for (const ballot of ballots) {
-    const choice = ballot.votes.find((v) => v.positionId === positionId)
-    if (choice && voteCount.has(choice.candidateId)) {
-      voteCount.set(choice.candidateId, (voteCount.get(choice.candidateId) ?? 0) + 1)
-    }
-  }
-
-  const sorted = [...voteCount.entries()].sort((a, b) => b[1] - a[1])
-  const maxVotes = sorted[0]?.[1] ?? 0
-  const winnerId = maxVotes > 0 ? sorted[0][0] : null
-
-  return {
-    totalVotes,
-    winner: winnerId,
-    candidates: candidates.map((c) => {
-      const v = voteCount.get(c._id) ?? 0
-      return {
-        candidateId: c._id,
-        fullname: c.fullname,
-        photo: c.photo,
-        votes: v,
-        percentage: totalVotes ? Math.round((v / totalVotes) * 100) : 0,
-        isWinner: c._id === winnerId,
-      }
-    }),
   }
 }
 
