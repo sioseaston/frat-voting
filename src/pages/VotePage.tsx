@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { ArrowLeft, CheckCircle2, Eye, X } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, X } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ConfirmDialog } from '../components/ui/ConfirmDialog'
@@ -197,37 +197,37 @@ export function VotePage() {
               {pool.map((candidate) => (
                 <div
                   key={candidate._id}
-                  className={`flex cursor-pointer items-center gap-4 px-6 py-4 transition hover:bg-slate-50 ${
+                  className={`flex items-center gap-4 px-6 py-4 transition ${
                     selected === candidate._id ? 'bg-brand-50' : ''
                   }`}
-                  onClick={() => handleSelect(position._id, candidate._id)}
                 >
-                  <img
-                    src={candidate.photo || fallbackPhoto}
-                    alt={candidate.fullname}
-                    className="h-14 w-14 shrink-0 rounded-full object-cover ring-2 ring-slate-100"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    className="flex min-w-0 flex-1 items-center gap-4 text-left"
+                    onClick={() => setDetailCandidate(candidate)}
+                  >
+                    <img
+                      src={candidate.photo || fallbackPhoto}
+                      alt={candidate.fullname}
+                      className="h-14 w-14 shrink-0 rounded-full object-cover ring-2 ring-slate-100"
+                    />
+                    <div className="min-w-0 flex-1">
                       <p className="font-semibold text-slate-900">{candidate.fullname}</p>
-                      <button
-                        type="button"
-                        className="text-brand-600 hover:text-brand-800"
-                        onClick={(e) => { e.stopPropagation(); setDetailCandidate(candidate) }}
-                        aria-label={`View details for ${candidate.fullname}`}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </button>
+                      <p className="truncate text-sm text-slate-500">{candidate.platform}</p>
                     </div>
-                    <p className="truncate text-sm text-slate-500">{candidate.platform}</p>
-                  </div>
-                  <div className={`grid h-6 w-6 shrink-0 place-items-center rounded-full border-2 transition ${
-                    selected === candidate._id ? 'border-brand-600 bg-brand-600' : 'border-slate-300'
-                  }`}>
+                  </button>
+                  <button
+                    type="button"
+                    className={`grid h-7 w-7 shrink-0 place-items-center rounded-full border-2 transition hover:border-brand-400 ${
+                      selected === candidate._id ? 'border-brand-600 bg-brand-600' : 'border-slate-300'
+                    }`}
+                    onClick={() => handleSelect(position._id, candidate._id)}
+                    aria-label={`Select ${candidate.fullname}`}
+                  >
                     {selected === candidate._id ? (
-                      <div className="h-2 w-2 rounded-full bg-white" />
+                      <div className="h-2.5 w-2.5 rounded-full bg-white" />
                     ) : null}
-                  </div>
+                  </button>
                 </div>
               ))}
             </div>
