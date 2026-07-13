@@ -35,12 +35,16 @@ export function PositionsPage() {
 
   const create = useMutation({
     mutationFn: () => {
+      const trimmed = name.trim()
+      if (!trimmed) throw new Error('Position name is required')
+      const exists = ordered.some((p) => p.name.toLowerCase() === trimmed.toLowerCase())
+      if (exists) throw new Error(`"${trimmed}" already exists in this election`)
       const nextOrder = ordered.length + 1
-      return api.createPosition({ electionId: selectedElectionId, name, order: nextOrder })
+      return api.createPosition({ electionId: selectedElectionId, name: trimmed, order: nextOrder })
     },
     onSuccess: async () => {
       notify('Position saved.')
-      setName(defaultPositions[0])
+      setName('')
       await queryClient.invalidateQueries({ queryKey: ['positions'] })
     },
     onError: (error) => notify(error instanceof Error ? error.message : 'Unable to save position', 'error'),
@@ -119,10 +123,7 @@ export function PositionsPage() {
           </label>
           <label>
             <span className="field-label">Position Name</span>
-            <input className="field-input" list="default-positions" value={name} onChange={(event) => setName(event.target.value)} />
-            <datalist id="default-positions">
-              {defaultPositions.map((position) => <option key={position} value={position} />)}
-            </datalist>
+            <input className="field-input" value={name} onChange={(event) => setName(event.target.value)} />
           </label>
           <div className="flex items-end">
             <button className="btn-primary w-full" onClick={() => create.mutate()} disabled={!selectedElectionId || create.isPending}>

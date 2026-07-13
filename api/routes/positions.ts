@@ -26,6 +26,9 @@ export async function create(req: VercelRequest, res: VercelResponse) {
   const parsed = positionSchema.required().safeParse(req.body)
   if (!parsed.success) return sendError(res, 400, 'Invalid position payload')
 
+  const existing = await PositionModel.findOne({ electionId: parsed.data.electionId, name: parsed.data.name })
+  if (existing) return sendError(res, 409, `"${parsed.data.name}" already exists in this election`)
+
   const position = await PositionModel.create(parsed.data)
   logAudit(auth.id, auth.role, 'create', 'position', position._id.toString(), `Created position ${position.name}`)
   return res.status(201).json({ position })
