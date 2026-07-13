@@ -176,7 +176,7 @@ export function MembersPage() {
       />
 
       {open ? (
-        <Modal title={editing ? 'Edit member' : 'Create member'} onClose={() => { setOpen(false); setEditing(null) }}>
+        <Modal title={editing ? 'Edit member' : 'Create member'} closeOnOverlay={false} onClose={() => { setOpen(false); setEditing(null) }}>
           <MemberForm member={editing} loading={save.isPending} onSubmit={(values) => save.mutate(values)} />
         </Modal>
       ) : null}

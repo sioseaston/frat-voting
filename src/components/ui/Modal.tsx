@@ -5,10 +5,12 @@ export function Modal({
   title,
   children,
   onClose,
+  closeOnOverlay = true,
 }: {
   title: string
   children: ReactNode
   onClose: () => void
+  closeOnOverlay?: boolean
 }) {
   const overlayRef = useRef<HTMLDivElement>(null)
 
@@ -29,7 +31,7 @@ export function Modal({
       aria-modal="true"
       aria-labelledby="modal-title"
       tabIndex={-1}
-      onClick={(e) => { if (e.target === overlayRef.current) onClose() }}
+      onClick={(e) => { if (closeOnOverlay && e.target === overlayRef.current) onClose() }}
     >
       <div className="w-full max-w-2xl rounded-lg bg-white shadow-soft">
         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
